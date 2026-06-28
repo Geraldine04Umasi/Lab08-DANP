@@ -17,13 +17,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.gamecatalog.data.model.Game
+import com.example.gamecatalog.presentation.viewmodel.GameUiState
 import com.example.gamecatalog.presentation.viewmodel.GameViewModel
+
+
 
 @Composable
 fun GameScreen(
     viewModel: GameViewModel = hiltViewModel()
 ) {
-    val games by viewModel.games.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
     val useFake by viewModel.useFake.collectAsState()
 
     Column(
@@ -32,7 +35,7 @@ fun GameScreen(
             .background(Color(0xFF1A1A2E))
             .padding(16.dp)
     ) {
-        // Header
+        // Header (igual que antes)
         Text(
             text = "🎮 Catálogo de Juegos",
             color = Color.White,
@@ -41,12 +44,10 @@ fun GameScreen(
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
-        // Toggle Real / Fake
+        // Toggle Real / Fake (igual que antes)
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp)
+            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
         ) {
             Text(
                 text = if (useFake) "Modo: FAKE (test)" else "Modo: REAL",
@@ -66,10 +67,41 @@ fun GameScreen(
             )
         }
 
-        // Lista de juegos
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            items(games) { game ->
-                GameCard(game = game)
+        // Contenido según el estado: Loading / Success / Error
+        when (val state = uiState) {
+            is GameUiState.Loading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = Color(0xFF69F0AE))
+                }
+            }
+
+            is GameUiState.Success -> {
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    items(state.games) { game ->
+                        GameCard(game = game)
+                    }
+                }
+            }
+
+            is GameUiState.Error -> {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "⚠️ ${state.message}",
+                        color = Color(0xFFFF6B6B),
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(bottom = 12.dp)
+                    )
+                    Button(onClick = { viewModel.loadGames() }) {
+                        Text("Reintentar")
+                    }
+                }
             }
         }
     }

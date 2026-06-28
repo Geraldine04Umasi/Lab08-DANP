@@ -20,6 +20,7 @@ class RealGameRepository @Inject constructor(
         title = name,
         genre = genres?.firstOrNull()?.name ?: "Sin género",
         year = released?.take(4)?.toIntOrNull() ?: 0,
-        rating = rating
+        rating = rating,
+        imageUrl = backgroundImage
     )
 }
