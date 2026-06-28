@@ -7,6 +7,5 @@ import javax.inject.Inject
 class GetGamesUseCase @Inject constructor(
     private val repository: GameRepository
 ) {
-    operator fun invoke(): List<Game> = repository.getGames()
+    suspend operator fun invoke(): List<Game> = repository.getGames()
 }
-
