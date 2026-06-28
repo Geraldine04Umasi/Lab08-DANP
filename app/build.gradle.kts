@@ -1,3 +1,13 @@
+import java.util.Properties
+import java.io.FileInputStream
+
+val localProperties = Properties().apply {
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        load(FileInputStream(localPropertiesFile))
+    }
+}
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -18,6 +28,12 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField(
+            "String",
+            "RAWG_API_KEY",
+            "\"${localProperties.getProperty("RAWG_API_KEY", "")}\""
+        )
     }
 
     buildTypes {
@@ -38,6 +54,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -54,6 +71,9 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.57")
     kapt("com.google.dagger:hilt-compiler:2.57")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+    implementation(libs.retrofit.core)
+    implementation(libs.retrofit.converter.gson)
+    implementation(libs.okhttp.logging.interceptor)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
