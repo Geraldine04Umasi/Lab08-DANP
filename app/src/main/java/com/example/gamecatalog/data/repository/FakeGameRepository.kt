@@ -5,7 +5,7 @@ import javax.inject.Inject
 
 class FakeGameRepository @Inject constructor() : GameRepository {
 
-    override fun getGames(): List<Game> = listOf(
+    override suspend fun getGames(): List<Game> = listOf(
         Game(1, "Fake Game Alpha", "TEST", 2000, 1.0f),
         Game(2, "Fake Game Beta", "TEST", 2001, 2.0f),
         Game(3, "Fake Game Gamma", "TEST", 2002, 3.0f),
