@@ -41,6 +41,8 @@ fun GameScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var searchText by remember { mutableStateOf("") }
+    var selectedGenre by remember { mutableStateOf("Todos") }
+    val genres = listOf("Todos", "Action", "RPG", "Adventure", "Shooter")
 
     Column(
         modifier = Modifier
@@ -111,6 +113,28 @@ fun GameScreen(
             )
         )
 
+        // Filtros de género
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp)
+        ) {
+            genres.forEach { genre ->
+                FilterChip(
+                    selected = selectedGenre == genre,
+                    onClick = { selectedGenre = genre },
+                    label = { Text(genre) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = Color(0xFF69F0AE),
+                        selectedLabelColor = Color(0xFF1A1A2E),
+                        containerColor = Color(0xFF16213E),
+                        labelColor = Color.White
+                    )
+                )
+            }
+        }
+
         // Contenido según el estado: Loading / Success / Error
         when (val state = uiState) {
             is GameUiState.Loading -> {
@@ -124,7 +148,8 @@ fun GameScreen(
 
             is GameUiState.Success -> {
                 val filteredGames = state.games.filter {
-                    it.title.contains(searchText, ignoreCase = true)
+                    it.title.contains(searchText, ignoreCase = true) &&
+                            (selectedGenre == "Todos" || it.genre.equals(selectedGenre, ignoreCase = true))
                 }
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     items(filteredGames) { game ->
