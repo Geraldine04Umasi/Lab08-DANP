@@ -23,6 +23,7 @@ import coil.compose.AsyncImage
 import com.example.gamecatalog.data.model.Game
 import com.example.gamecatalog.presentation.viewmodel.GameUiState
 import com.example.gamecatalog.presentation.viewmodel.GameViewModel
+import androidx.compose.foundation.lazy.LazyRow
 
 @Composable
 fun GameScreen(
@@ -42,7 +43,7 @@ fun GameScreen(
     ) {
         // Header
         Text(
-            text = "🎮 Catálogo de Juegos",
+            text = "Catálogo de Juegos",
             color = Color.White,
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
@@ -82,14 +83,13 @@ fun GameScreen(
             )
         )
 
-        // 🆕 Chips de filtro de género
-        Row(
+        LazyRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp)
         ) {
-            genres.forEach { genre ->
+            items(genres) { genre ->
                 FilterChip(
                     selected = selectedGenre == genre,
                     onClick = {

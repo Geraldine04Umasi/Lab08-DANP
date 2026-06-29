@@ -32,7 +32,6 @@ class GameViewModel @Inject constructor(
     }
 
     fun loadGames(genre: String? = null) {
-        // "Todos" se trata como null (sin filtro)
         val genreParam = if (genre == "Todos") null else genre
         currentGenre = genreParam
         viewModelScope.launch {

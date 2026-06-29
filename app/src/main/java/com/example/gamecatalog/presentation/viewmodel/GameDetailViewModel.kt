@@ -33,7 +33,6 @@ class GameDetailViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = GameDetailUiState.Loading
             try {
-                // Siempre usamos el caso de uso real para detalle (no hay fake)
                 val detail = getGameDetailUseCase(gameId)
                 _uiState.value = GameDetailUiState.Success(detail)
             } catch (e: Exception) {
