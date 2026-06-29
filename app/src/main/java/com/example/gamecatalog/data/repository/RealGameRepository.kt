@@ -10,9 +10,22 @@ class RealGameRepository @Inject constructor(
     private val api: RawgApi
 ) : GameRepository {
 
-    override suspend fun getGames(): List<Game> {
-        val response = api.getGames(apiKey = BuildConfig.RAWG_API_KEY)
-        return response.results.map { it.toGame() }
+    private val genreToSlug = mapOf(
+        "Action" to "action",
+        "RPG" to "role-playing-games-rpg",
+        "Adventure" to "adventure",
+        "Shooter" to "shooter"
+    )
+
+    override suspend fun getGames(genre: String?): List<Game> {
+        val genreSlug = genre?.let { genreToSlug[it] }
+        val response = api.getGames(
+            apiKey = BuildConfig.RAWG_API_KEY,
+            genres = genreSlug
+        )
+        return response.results
+            .map { it.toGame() }
+            .filter { it.imageUrl != null }
     }
 
     private fun RawgGameDto.toGame(): Game = Game(

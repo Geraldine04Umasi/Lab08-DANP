@@ -25,16 +25,21 @@ class GameViewModel @Inject constructor(
 
     val useFake: StateFlow<Boolean> = toggleState.useFake
 
+    private var currentGenre: String? = null
+
     init {
         loadGames()
     }
 
-    fun loadGames() {
+    fun loadGames(genre: String? = null) {
+        // "Todos" se trata como null (sin filtro)
+        val genreParam = if (genre == "Todos") null else genre
+        currentGenre = genreParam
         viewModelScope.launch {
             _uiState.value = GameUiState.Loading
             val useCase = if (useFake.value) fakeUseCase else realUseCase
             try {
-                val games = useCase()
+                val games = useCase(genreParam)
                 _uiState.value = GameUiState.Success(games)
             } catch (e: Exception) {
                 _uiState.value = GameUiState.Error(e.message ?: "Ocurrió un error inesperado")
@@ -44,6 +49,6 @@ class GameViewModel @Inject constructor(
 
     fun toggleSource() {
         toggleState.toggle()
-        loadGames()
+        loadGames(currentGenre)
     }
 }

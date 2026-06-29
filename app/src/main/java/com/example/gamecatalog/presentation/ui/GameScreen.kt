@@ -1,38 +1,28 @@
 package com.example.gamecatalog.presentation.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.example.gamecatalog.data.model.Game
 import com.example.gamecatalog.presentation.viewmodel.GameUiState
 import com.example.gamecatalog.presentation.viewmodel.GameViewModel
-import androidx.compose.ui.layout.ContentScale
-import coil.compose.AsyncImage
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.getValue
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.foundation.clickable
-
 
 @Composable
 fun GameScreen(
@@ -50,7 +40,7 @@ fun GameScreen(
             .background(Color(0xFF1A1A2E))
             .padding(16.dp)
     ) {
-        // Header (igual que antes)
+        // Header
         Text(
             text = "🎮 Catálogo de Juegos",
             color = Color.White,
@@ -59,71 +49,53 @@ fun GameScreen(
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
+        // Barra de búsqueda
         OutlinedTextField(
             value = searchText,
             onValueChange = { searchText = it },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 16.dp),
-
-            label = {
-                Text("Buscar juego")
-            },
-
-            placeholder = {
-                Text("Ej. Elden Ring")
-            },
-
+                .padding(bottom = 12.dp),
+            label = { Text("Buscar juego") },
+            placeholder = { Text("Ej. Elden Ring") },
             leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Buscar"
-                )
+                Icon(imageVector = Icons.Default.Search, contentDescription = "Buscar")
             },
-
             trailingIcon = {
                 if (searchText.isNotEmpty()) {
-                    IconButton(
-                        onClick = { searchText = "" }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Limpiar búsqueda"
-                        )
+                    IconButton(onClick = { searchText = "" }) {
+                        Icon(imageVector = Icons.Default.Close, contentDescription = "Limpiar búsqueda")
                     }
                 }
             },
-
             singleLine = true,
-
             colors = OutlinedTextFieldDefaults.colors(
                 focusedTextColor = Color.White,
                 unfocusedTextColor = Color.White,
-
                 focusedBorderColor = Color(0xFF69F0AE),
                 unfocusedBorderColor = Color.Gray,
-
                 focusedLabelColor = Color(0xFF69F0AE),
                 unfocusedLabelColor = Color.LightGray,
-
                 cursorColor = Color(0xFF69F0AE),
-
                 focusedPlaceholderColor = Color.Gray,
                 unfocusedPlaceholderColor = Color.Gray
             )
         )
 
-        // Filtros de género
+        // 🆕 Chips de filtro de género
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 12.dp)
+                .padding(bottom = 16.dp)
         ) {
             genres.forEach { genre ->
                 FilterChip(
                     selected = selectedGenre == genre,
-                    onClick = { selectedGenre = genre },
+                    onClick = {
+                        selectedGenre = genre
+                        viewModel.loadGames(genre)
+                    },
                     label = { Text(genre) },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = Color(0xFF69F0AE),
@@ -135,7 +107,7 @@ fun GameScreen(
             }
         }
 
-        // Contenido según el estado: Loading / Success / Error
+        // Contenido según estado
         when (val state = uiState) {
             is GameUiState.Loading -> {
                 Box(
@@ -147,9 +119,12 @@ fun GameScreen(
             }
 
             is GameUiState.Success -> {
-                val filteredGames = state.games.filter {
-                    it.title.contains(searchText, ignoreCase = true) &&
-                            (selectedGenre == "Todos" || it.genre.equals(selectedGenre, ignoreCase = true))
+
+                val filteredGames = state.games.filter { game ->
+                    val matchesSearch = game.title.contains(searchText, ignoreCase = true)
+                    val matchesGenre = selectedGenre == "Todos" ||
+                            game.genre.equals(selectedGenre, ignoreCase = true)
+                    matchesSearch && matchesGenre
                 }
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     items(filteredGames) { game ->
@@ -170,7 +145,7 @@ fun GameScreen(
                         fontSize = 14.sp,
                         modifier = Modifier.padding(bottom = 12.dp)
                     )
-                    Button(onClick = { viewModel.loadGames() }) {
+                    Button(onClick = { viewModel.loadGames(selectedGenre) }) {
                         Text("Reintentar")
                     }
                 }
@@ -184,7 +159,9 @@ fun GameCard(game: Game, onClick: () -> Unit) {
     Card(
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF16213E)),
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
     ) {
         Column {
             if (game.imageUrl != null) {
