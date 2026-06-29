@@ -87,6 +87,7 @@ dependencies {
 
     // Coil 2.x – no necesita coil.network.okhttp
     implementation(libs.coil.compose)
+    implementation(libs.androidx.navigation.compose)
 
     // Testing
     testImplementation(libs.junit)

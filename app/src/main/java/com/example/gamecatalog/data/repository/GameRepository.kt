@@ -4,5 +4,6 @@ import com.example.gamecatalog.data.model.Game
 
 interface GameRepository {
     suspend fun getGames(): List<Game>
+
 }
 

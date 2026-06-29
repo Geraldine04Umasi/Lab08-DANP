@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gamecatalog.di.FakeUseCase
 import com.example.gamecatalog.di.RealUseCase
+import com.example.gamecatalog.di.ToggleState
 import com.example.gamecatalog.domain.usecase.GetGamesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,14 +16,14 @@ import javax.inject.Inject
 @HiltViewModel
 class GameViewModel @Inject constructor(
     @RealUseCase private val realUseCase: GetGamesUseCase,
-    @FakeUseCase private val fakeUseCase: GetGamesUseCase
+    @FakeUseCase private val fakeUseCase: GetGamesUseCase,
+    private val toggleState: ToggleState
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<GameUiState>(GameUiState.Loading)
     val uiState: StateFlow<GameUiState> = _uiState.asStateFlow()
 
-    private val _useFake = MutableStateFlow(false)
-    val useFake: StateFlow<Boolean> = _useFake.asStateFlow()
+    val useFake: StateFlow<Boolean> = toggleState.useFake
 
     init {
         loadGames()
@@ -31,7 +32,7 @@ class GameViewModel @Inject constructor(
     fun loadGames() {
         viewModelScope.launch {
             _uiState.value = GameUiState.Loading
-            val useCase = if (_useFake.value) fakeUseCase else realUseCase
+            val useCase = if (useFake.value) fakeUseCase else realUseCase
             try {
                 val games = useCase()
                 _uiState.value = GameUiState.Success(games)
@@ -42,7 +43,7 @@ class GameViewModel @Inject constructor(
     }
 
     fun toggleSource() {
-        _useFake.value = !_useFake.value
+        toggleState.toggle()
         loadGames()
     }
 }

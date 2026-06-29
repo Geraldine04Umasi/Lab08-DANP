@@ -31,10 +31,12 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.foundation.clickable
 
 
 @Composable
 fun GameScreen(
+    onGameClick: (Int) -> Unit,
     viewModel: GameViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -126,7 +128,7 @@ fun GameScreen(
                 }
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     items(filteredGames) { game ->
-                        GameCard(game = game)
+                        GameCard(game = game, onClick = { onGameClick(game.id) })
                     }
                 }
             }
@@ -153,11 +155,11 @@ fun GameScreen(
 }
 
 @Composable
-fun GameCard(game: Game) {
+fun GameCard(game: Game, onClick: () -> Unit) {
     Card(
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF16213E)),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)
     ) {
         Column {
             if (game.imageUrl != null) {

@@ -1,8 +1,7 @@
 package com.example.gamecatalog.di
 
-import com.example.gamecatalog.data.repository.FakeGameRepository
-import com.example.gamecatalog.data.repository.GameRepository
-import com.example.gamecatalog.data.repository.RealGameRepository
+import com.example.gamecatalog.data.repository.*
+import com.example.gamecatalog.domain.usecase.GetGameDetailUseCase
 import com.example.gamecatalog.domain.usecase.GetGamesUseCase
 import dagger.Binds
 import dagger.Module
@@ -11,6 +10,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Qualifier
 import javax.inject.Singleton
+
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class RealRepo
@@ -41,6 +41,10 @@ abstract class AppModule {
     @FakeRepo
     abstract fun bindFakeRepository(impl: FakeGameRepository): GameRepository
 
+    @Binds
+    @Singleton
+    abstract fun bindGameDetailRepository(impl: RealGameDetailRepository): GameDetailRepository
+
     companion object {
 
         @Provides
@@ -54,5 +58,10 @@ abstract class AppModule {
         @FakeUseCase
         fun provideFakeUseCase(@FakeRepo repository: GameRepository): GetGamesUseCase =
             GetGamesUseCase(repository)
+
+        @Provides
+        @Singleton
+        fun provideGetGameDetailUseCase(repository: GameDetailRepository): GetGameDetailUseCase =
+            GetGameDetailUseCase(repository)
     }
 }
