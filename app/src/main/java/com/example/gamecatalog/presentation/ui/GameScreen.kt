@@ -19,7 +19,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.gamecatalog.data.model.Game
 import com.example.gamecatalog.presentation.viewmodel.GameUiState
 import com.example.gamecatalog.presentation.viewmodel.GameViewModel
-
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
 
 
 @Composable
@@ -114,20 +115,43 @@ fun GameCard(game: Game) {
         colors = CardDefaults.cardColors(containerColor = Color(0xFF16213E)),
         modifier = Modifier.fillMaxWidth()
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = game.title,
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                InfoChip(label = game.genre, color = Color(0xFF533483))
-                InfoChip(label = game.year.toString(), color = Color(0xFF1A4A6E))
+        Column {
+            if (game.imageUrl != null) {
+                AsyncImage(
+                    model = game.imageUrl,
+                    contentDescription = game.title,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(140.dp)
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(140.dp)
+                        .background(Color(0xFF0F1B33)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "🎮", fontSize = 36.sp)
+                }
             }
-            Spacer(modifier = Modifier.height(8.dp))
-            RatingBar(rating = game.rating)
+
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = game.title,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    InfoChip(label = game.genre, color = Color(0xFF533483))
+                    InfoChip(label = game.year.toString(), color = Color(0xFF1A4A6E))
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                RatingBar(rating = game.rating)
+            }
         }
     }
 }
