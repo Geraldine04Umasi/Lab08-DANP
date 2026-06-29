@@ -21,6 +21,16 @@ import com.example.gamecatalog.presentation.viewmodel.GameUiState
 import com.example.gamecatalog.presentation.viewmodel.GameViewModel
 import androidx.compose.ui.layout.ContentScale
 import coil.compose.AsyncImage
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 
 
 @Composable
@@ -28,7 +38,7 @@ fun GameScreen(
     viewModel: GameViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val useFake by viewModel.useFake.collectAsState()
+    var searchText by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -45,28 +55,59 @@ fun GameScreen(
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
-        // Toggle Real / Fake (igual que antes)
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
-        ) {
-            Text(
-                text = if (useFake) "Modo: FAKE (test)" else "Modo: REAL",
-                color = if (useFake) Color(0xFFFFAB40) else Color(0xFF69F0AE),
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.weight(1f)
-            )
-            Switch(
-                checked = useFake,
-                onCheckedChange = { viewModel.toggleSource() },
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = Color(0xFFFFAB40),
-                    checkedTrackColor = Color(0xFF4A3F00),
-                    uncheckedThumbColor = Color(0xFF69F0AE),
-                    uncheckedTrackColor = Color(0xFF003020)
+        OutlinedTextField(
+            value = searchText,
+            onValueChange = { searchText = it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+
+            label = {
+                Text("Buscar juego")
+            },
+
+            placeholder = {
+                Text("Ej. Elden Ring")
+            },
+
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Buscar"
                 )
+            },
+
+            trailingIcon = {
+                if (searchText.isNotEmpty()) {
+                    IconButton(
+                        onClick = { searchText = "" }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Limpiar búsqueda"
+                        )
+                    }
+                }
+            },
+
+            singleLine = true,
+
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = Color.White,
+                unfocusedTextColor = Color.White,
+
+                focusedBorderColor = Color(0xFF69F0AE),
+                unfocusedBorderColor = Color.Gray,
+
+                focusedLabelColor = Color(0xFF69F0AE),
+                unfocusedLabelColor = Color.LightGray,
+
+                cursorColor = Color(0xFF69F0AE),
+
+                focusedPlaceholderColor = Color.Gray,
+                unfocusedPlaceholderColor = Color.Gray
             )
-        }
+        )
 
         // Contenido según el estado: Loading / Success / Error
         when (val state = uiState) {
@@ -80,8 +121,11 @@ fun GameScreen(
             }
 
             is GameUiState.Success -> {
+                val filteredGames = state.games.filter {
+                    it.title.contains(searchText, ignoreCase = true)
+                }
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    items(state.games) { game ->
+                    items(filteredGames) { game ->
                         GameCard(game = game)
                     }
                 }
